@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받을 다이야 계산기</title>
+    <style>
+        :root {
+            --dark-bg: #1c1c1e;
+            --dark-surface: #2c2c2e;
+            --dark-element-bg: #3a3b3c;
+            --dark-border: #4b4c4e;
+            --dark-text-primary: #FFFFFF; 
+            --dark-text-secondary: #EAEBEF; 
+            --dark-accent-blue: #2d88ff;
+            --dark-accent-red: #f73411; 
+        }
+
+        /* 기본 스타일 초기화 및 설정 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--dark-text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        /* 계산기 컨테이너 스타일 */
+        .calculator-container {
+            background-color: var(--dark-surface);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            border: 1px solid var(--dark-border);
+        }
+
+        /* 제목 스타일 */
+        h1 {
+            text-align: center;
+            color: var(--dark-text-primary);
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        /* 입력 그룹 스타일 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-text-secondary);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--dark-element-bg);
+            border: 1px solid var(--dark-border);
+            color: var(--dark-text-primary);
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            text-align: center; 
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--dark-accent-blue);
+            box-shadow: 0 0 0 3px rgba(45, 136, 255, 0.3);
+        }
+
+        .input-group input::placeholder {
+            color: var(--dark-text-secondary);
+            opacity: 0.5;
+        }
+        
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* 버튼 스타일 */
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--dark-accent-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        button:hover {
+            background-color: var(--dark-accent-red);
+        }
+
+        /* 결과 영역 스타일 */
+        .results-container {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--dark-border);
+        }
+
+        h3 {
+            text-align: center;
+            color: var(--dark-text-primary);
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 5px;
+            font-size: 16px;
+            min-height: 24px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .result-item:not(:last-child) {
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .result-label {
+            color: var(--dark-text-secondary);
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--dark-text-primary);
+        }
+        
+        .result-value.highlight {
+            color: var(--dark-accent-red);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>💎 받을 다이야 계산기</h1>
+        
+        <div class="input-group">
+            <label for="receiveDiamonds">받을 다이야</label>
+            <input type="text" inputmode="numeric" id="receiveDiamonds" placeholder="원하는 다이야 수량을 입력하세요">
+        </div>
+
+        <div class="input-group">
+            <label for="taxRate">거래소 세금 (%)</label>
+            <input type="number" id="taxRate" placeholder="세율을 % 단위로 입력하세요 (예: 5)">
+        </div>
+
+        <button id="calculateBtn">계산하기</button>
+
+        <div class="results-container" id="results">
+            <h3>계산 결과</h3>
+            <div class="result-item">
+                <span class="result-label"><strong>받는 사람 거래소 등록</strong></span>
+                <span class="result-value highlight" id="registrationAmount">0 다이야</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">거래소 세금</span>
+                <span class="result-value" id="taxAmount">- 0 다이야</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">실제 받는 다이야</span>
+                <span class="result-value" id="actualReceiveAmount">0 다이야</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const receiveDiamondsInput = document.getElementById('receiveDiamonds');
+        const taxRateInput = document.getElementById('taxRate');
+        const calculateBtn = document.getElementById('calculateBtn');
+        
+        const registrationAmountSpan = document.getElementById('registrationAmount');
+        const taxAmountSpan = document.getElementById('taxAmount');
+        const actualReceiveAmountSpan = document.getElementById('actualReceiveAmount');
+
+        receiveDiamondsInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            const rawValue = value.replace(/[^0-9]/g, '');
+            if (rawValue) {
+                e.target.value = parseInt(rawValue, 10).toLocaleString('ko-KR');
+            } else {
+                e.target.value = '';
+            }
+        });
+
+        function calculate() {
+            const receiveDiamondsValue = receiveDiamondsInput.value.replace(/,/g, '');
+            const receiveDiamonds = parseFloat(receiveDiamondsValue);
+            const taxRate = parseFloat(taxRateInput.value);
+
+            if (isNaN(receiveDiamonds) || receiveDiamonds <= 0 || isNaN(taxRate) || taxRate < 0 || taxRate >= 100) {
+                alert("올바른 '받을 다이야'와 '거래소 세금(0~99 사이)'을 입력해주세요.");
+                
+                registrationAmountSpan.textContent = '0 다이야';
+                taxAmountSpan.textContent = '- 0 다이야';
+                actualReceiveAmountSpan.textContent = '0 다이야';
+                return;
+            }
+
+            const taxPercent = taxRate / 100;
+            const registrationAmount = Math.ceil(receiveDiamonds / (1 - taxPercent));
+            const taxAmount = Math.ceil(registrationAmount * taxPercent);
+            const actualReceiveAmount = registrationAmount - taxAmount;
+
+            registrationAmountSpan.textContent = registrationAmount.toLocaleString('ko-KR') + ' 다이야';
+            taxAmountSpan.textContent = '- ' + taxAmount.toLocaleString('ko-KR') + ' 다이야';
+            actualReceiveAmountSpan.textContent = actualReceiveAmount.toLocaleString('ko-KR') + ' 다이야';
+        }
+        
+        calculateBtn.addEventListener('click', calculate);
+
+        receiveDiamondsInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                taxRateInput.focus();
+            }
+        });
+
+        taxRateInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+
+</body>
+</html>

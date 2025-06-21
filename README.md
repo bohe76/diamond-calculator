@@ -1,2 +1,2 @@
 # diamond-calculator
-다이야 세금 고려한 계산기
+받을 다이야 계산기
